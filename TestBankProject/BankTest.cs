@@ -69,5 +69,67 @@ namespace TestBankProject
         }
 
 
+        [Test]
+        public void EgyenlegFeltolt_NullSzamlaszammal_ArgumentNullException()
+        {
+            bank.UjSzamla("Gipsz Jakab", "1234");
+
+            Assert.Throws<ArgumentNullException>(() => bank.EgyenlegFeltolt(null, 10000));
+        }
+
+
+        [Test]
+        public void EgyenlegFeltolt_NemLetezoSzamlaszammal_HibasSzamlaszamException()
+        {
+            bank.UjSzamla("Gipsz Jakab", "1234");
+
+            Assert.Throws<HibasSzamlaszamException>(() => bank.EgyenlegFeltolt("5678", 10000));
+        }
+
+
+        [Test]
+        public void EgyenlegFeltolt_0Osszeg_ArgumentException()
+        {
+            bank.UjSzamla("Gipsz Jakab", "1234");
+
+            Assert.Throws<ArgumentException>(() => bank.EgyenlegFeltolt("1234", 0));
+        }
+
+        [Test]
+        public void EgyenlegFeltolt_LetezoSzamlaraEgyszeriFeltoltes_EgyenlegMegvaltozik()
+        {
+            bank.UjSzamla("Gipsz Jakab", "1234");
+
+            bank.EgyenlegFeltolt("1234", 10000);
+
+            Assert.That(bank.Egyenleg("1234"), Is.EqualTo(10000));
+        }
+
+        [Test]
+        public void EgyenlegFeltolt_LetezoSzamlaraTobbszoriFeltoltes_EgyenlegOsszeadodik()
+        {
+            bank.UjSzamla("Gipsz Jakab", "1234");
+
+            bank.EgyenlegFeltolt("1234", 10000);
+            bank.EgyenlegFeltolt("1234", 20000);
+
+            Assert.That(bank.Egyenleg("1234"), Is.EqualTo(30000));
+        }
+
+        [Test]
+        public void EgyenlegFeltolt_TobbSzamlaval_EgyenlegMegfeleloSzamlaraTolt()
+        {
+            bank.UjSzamla("Gipsz Jakab", "1234");
+            bank.UjSzamla("Gipsz Jakab", "4321");
+            bank.UjSzamla("Teszt Elek", "5678");
+
+            bank.EgyenlegFeltolt("1234", 10000);
+            bank.EgyenlegFeltolt("4321", 20000);
+            bank.EgyenlegFeltolt("5678", 50000);
+
+            Assert.That(bank.Egyenleg("1234"), Is.EqualTo(10000));
+            Assert.That(bank.Egyenleg("4321"), Is.EqualTo(20000));
+            Assert.That(bank.Egyenleg("5678"), Is.EqualTo(50000));
+        }
     }
 }

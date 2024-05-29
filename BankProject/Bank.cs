@@ -75,7 +75,34 @@
         /// <exception cref="HibasSzamlaszamException">A megadott számlaszámmal nem létezik számla</exception>
         public ulong Egyenleg(string szamlaszam)
         {
-            return 0;
+            Szamla szamla = SzamlaKereses(szamlaszam);
+            return szamla.Egyenleg;
+        }
+
+        private Szamla SzamlaKereses(string szamlaszam)
+        {
+            if (szamlaszam == null)
+            {
+                throw new ArgumentNullException(nameof(szamlaszam));
+            }
+            if (szamlaszam == "")
+            {
+                throw new ArgumentException("A név nem lehet üres", nameof(szamlaszam));
+            }
+
+            int i = 0;
+            while (i < szamlak.Count && szamlak[i].Szamlaszam != szamlaszam)
+            {
+                i++;
+            }
+
+            if (i == szamlak.Count)
+            {
+                throw new HibasSzamlaszamException(szamlaszam);
+            }
+
+            Szamla szamla = szamlak[i];
+            return szamla;
         }
 
         /// <summary>
@@ -89,7 +116,13 @@
         /// <exception cref="HibasSzamlaszamException">A megadott számlaszámmal nem létezik számla</exception>
         public void EgyenlegFeltolt(string szamlaszam, ulong osszeg)
         {
-            throw new NotImplementedException();
+            if (osszeg < 1)
+            {
+                throw new ArgumentException("Az összeg csak pozitív lehet.", nameof(osszeg));
+            }
+
+            Szamla szamla = SzamlaKereses(szamlaszam);
+            szamla.Egyenleg += osszeg;
         }
 
         /// <summary>
